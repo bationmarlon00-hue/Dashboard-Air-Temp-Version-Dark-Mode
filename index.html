@@ -5,10 +5,10 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Air Quality & Temperature Monitoring System</title>
     
-    <!-- Google Fonts: Inter -->
+    <!-- Google Fonts: Inter (Data) & Nunito (Bubble/Rounded for Headers) -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Nunito:wght@600;700;800;900&display=swap" rel="stylesheet">
 
     <!-- Apache ECharts for the Line and Donut Graphs -->
     <script src="https://cdn.jsdelivr.net/npm/echarts@5.5.0/dist/echarts.min.js"></script>
@@ -63,42 +63,34 @@
             border-radius: 50%;
             background-color: white; 
             padding: 3px;
-            box-shadow: 0 0 10px rgba(33, 150, 243, 0.3);
+            box-shadow: 0 0 12px rgba(0, 198, 255, 0.4);
         }
 
         .top-nav h1 {
             margin: 0;
-            font-size: 36px; /* Massively increased size */
-            font-weight: 900; /* Extra Black font weight */
-            /* Premium Cyan-to-Blue Gradient for the title */
-            background: linear-gradient(90deg, #4facfe 0%, #00f2fe 100%);
+            font-size: 38px; 
+            font-family: 'Nunito', sans-serif; /* Rounded, bubble-like font */
+            font-weight: 900; 
+            /* Premium Deep Blue to Cyan Gradient */
+            background: linear-gradient(135deg, #0072ff 0%, #00c6ff 100%);
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
             text-transform: uppercase;
             letter-spacing: 0.5px;
+            filter: drop-shadow(0px 2px 4px rgba(0, 114, 255, 0.2));
         }
 
-        .top-nav .sub-tabs {
-            font-size: 15px; 
-            font-weight: 500;
-            color: var(--text-muted);
-            display: flex;
-            gap: 20px;
-        }
-
-        .top-nav .sub-tabs span {
-            cursor: pointer;
-            padding-bottom: 5px;
-            transition: color 0.3s ease;
-        }
-
-        .top-nav .sub-tabs span:hover {
-            color: var(--text-main);
-        }
-
-        .top-nav .sub-tabs span.active {
-            color: var(--text-main);
-            border-bottom: 2px solid var(--dost-blue);
+        /* Replaced Sub-tabs with a radiant Welcome Text */
+        .welcome-text {
+            font-family: 'Nunito', sans-serif;
+            font-size: 20px; 
+            font-weight: 700;
+            background: linear-gradient(90deg, #4facfe 0%, #00f2fe 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            text-align: right;
+            max-width: 400px;
+            line-height: 1.3;
         }
 
         /* Main Grid Layout */
@@ -126,11 +118,10 @@
             flex-direction: column;
             justify-content: space-between;
             box-shadow: 0 4px 6px rgba(0,0,0,0.2);
-            cursor: pointer; /* Indicates it can be clicked */
+            cursor: pointer; 
             transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
         }
 
-        /* Hover effect for interactivity */
         .metric-card:hover {
             transform: translateY(-5px);
             box-shadow: 0 8px 15px rgba(0, 242, 254, 0.15);
@@ -173,7 +164,6 @@
             letter-spacing: -1px; 
         }
 
-        /* Linear Progress Bars */
         .progress-track {
             width: 100%;
             height: 8px; 
@@ -190,7 +180,6 @@
             transition: width 0.5s ease, background-color 0.5s ease;
         }
 
-        /* Action Text */
         .action-text {
             font-size: 12px; 
             font-weight: 600;
@@ -208,22 +197,110 @@
         .chart-panel {
             background-color: var(--panel-bg);
             border: 1px solid var(--border-color);
-            border-radius: 12px;
+            border-radius: 8px;
             padding: 20px;
             box-shadow: 0 4px 6px rgba(0,0,0,0.2);
+            display: flex;
+            flex-direction: column;
+            transition: all 0.3s ease;
+        }
+
+        .chart-header-wrap {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
         }
 
         .chart-title {
             font-size: 18px; 
             font-weight: 700;
-            margin-bottom: 15px;
             color: var(--text-main);
             letter-spacing: 0.5px;
+            margin: 0;
         }
 
-        .donut-container, .line-container {
+        /* Fullscreen Expansion Styles */
+        .expand-btn, .close-fullscreen {
+            background: none;
+            border: none;
+            color: var(--dost-blue);
+            cursor: pointer;
+            font-size: 22px;
+            transition: transform 0.2s ease, color 0.2s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .expand-btn:hover, .close-fullscreen:hover {
+            color: var(--dost-cyan);
+            transform: scale(1.1);
+        }
+
+        .close-fullscreen {
+            display: none;
+            font-size: 32px;
+        }
+
+        .chart-panel.fullscreen {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            z-index: 2000;
+            background-color: var(--bg-base);
+            border-radius: 0;
+            padding: 40px 5%;
+            margin: 0;
+            overflow-y: auto;
+        }
+
+        .chart-panel.fullscreen .expand-btn {
+            display: none;
+        }
+
+        .chart-panel.fullscreen .close-fullscreen {
+            display: block;
+        }
+
+        .chart-panel.fullscreen .donut-container,
+        .chart-panel.fullscreen .line-container {
+            flex-grow: 1;
+            height: auto;
+            min-height: 50vh;
+        }
+
+        .chart-panel.fullscreen .health-info {
+            font-size: 18px;
+            padding: 25px;
+            margin-top: 30px;
+        }
+
+        .donut-container {
+            width: 100%;
+            height: 230px; 
+        }
+
+        .line-container {
             width: 100%;
             height: 320px; 
+        }
+
+        /* Dynamic Health Status Information Box */
+        .health-info {
+            margin-top: 15px;
+            padding: 15px;
+            border-radius: 8px;
+            font-size: 13px;
+            font-weight: 600;
+            text-align: center;
+            background-color: rgba(255, 255, 255, 0.05);
+            color: var(--text-muted);
+            border: 1px solid var(--border-color);
+            transition: all 0.4s ease;
+            line-height: 1.5;
         }
 
         /* System Info Footer */
@@ -238,7 +315,7 @@
 
         /* Modal Styles */
         .modal-overlay {
-            display: none; /* Hidden by default */
+            display: none; 
             position: fixed;
             top: 0; left: 0; width: 100%; height: 100%;
             background: rgba(0, 0, 0, 0.75);
@@ -321,7 +398,7 @@
         }
 
         /* ==========================================
-           MOBILE RESPONSIVENESS (SMARTPHONES)
+           MOBILE RESPONSIVENESS
            ========================================== */
         @media (max-width: 768px) {
             body {
@@ -335,8 +412,14 @@
             }
 
             .top-nav h1 {
-                font-size: 22px; /* Scales down so it doesn't break the layout on mobile */
-                line-height: 1.3;
+                font-size: 26px; 
+                line-height: 1.2;
+            }
+
+            .welcome-text {
+                text-align: left;
+                font-size: 16px;
+                max-width: 100%;
             }
 
             .brand-logo {
@@ -344,18 +427,7 @@
                 height: 40px;
             }
 
-            .top-nav .sub-tabs {
-                width: 100%;
-                overflow-x: auto; 
-                padding-bottom: 5px;
-                white-space: nowrap;
-            }
-
-            .metrics-row {
-                grid-template-columns: 1fr; 
-            }
-
-            .charts-row {
+            .metrics-row, .charts-row {
                 grid-template-columns: 1fr; 
             }
             
@@ -375,14 +447,12 @@
                 <h1>Air Quality & Temp Monitoring</h1>
             </div>
             
-            <div class="sub-tabs">
-                <span class="active">Live Telemetry</span>
-                <span>Evaluation Node</span>
-                <span>DOST Edge Computing</span>
+            <div class="welcome-text">
+                Welcome! Breathe easy and work comfortably.
             </div>
         </div>
 
-        <!-- Top Row: IT Style Metric Cards (Now Clickable) -->
+        <!-- Top Row: IT Style Metric Cards (Clickable) -->
         <div class="metrics-row">
             <div class="metric-card" onclick="openModal('pm25')">
                 <div class="card-header">
@@ -442,13 +512,22 @@
 
         <!-- Bottom Row: Donut and Line Graph -->
         <div class="charts-row">
-            <div class="chart-panel">
-                <div class="chart-title">System Health & Status</div>
+            <div class="chart-panel" id="panel-health">
+                <div class="chart-header-wrap">
+                    <div class="chart-title">System Health & Status</div>
+                    <button class="expand-btn" onclick="toggleExpand('panel-health')" title="Expand Chart">⛶</button>
+                    <button class="close-fullscreen" onclick="toggleExpand('panel-health')" title="Close">&times;</button>
+                </div>
                 <div id="donut-chart" class="donut-container"></div>
+                <div id="health-info-text" class="health-info">Awaiting sensor data to analyze system health...</div>
             </div>
             
-            <div class="chart-panel">
-                <div class="chart-title">Environmental Trends (Last 20 Readings)</div>
+            <div class="chart-panel" id="panel-trends">
+                <div class="chart-header-wrap">
+                    <div class="chart-title">Environmental Trends (Last 20 Readings)</div>
+                    <button class="expand-btn" onclick="toggleExpand('panel-trends')" title="Expand Chart">⛶</button>
+                    <button class="close-fullscreen" onclick="toggleExpand('panel-trends')" title="Close">&times;</button>
+                </div>
                 <div id="line-chart" class="line-container"></div>
             </div>
         </div>
@@ -525,7 +604,6 @@
         }
 
         function closeModal(force = false) {
-            // Close if clicking the 'X' or clicking outside the content box
             document.getElementById('infoModal').classList.remove('show');
         }
 
@@ -656,16 +734,53 @@
             let color = '#4caf50'; 
             let label = 'SAFE';
             let score = 100;
+            let infoText = "All environmental parameters are currently within safe regulatory limits. No hazards detected.";
+            let infoBg = "rgba(76, 175, 80, 0.1)"; // Safe green background tint
+            let infoColor = "#4caf50";
 
-            if (threat === 2) { color = '#f44336'; label = 'DANGER'; score = 15; }
-            else if (threat === 1) { color = '#ff9800'; label = 'WARN'; score = 65; }
+            if (threat === 2) { 
+                color = '#f44336'; 
+                label = 'DANGER'; 
+                score = 15; 
+                infoText = "CRITICAL: Hazardous environmental conditions detected! Immediate ventilation or evacuation recommended.";
+                infoBg = "rgba(244, 67, 54, 0.1)"; // Danger red background tint
+                infoColor = "#f44336";
+            }
+            else if (threat === 1) { 
+                color = '#ff9800'; 
+                label = 'WARN'; 
+                score = 65; 
+                infoText = "CAUTION: One or more parameters have exceeded optimal levels. Monitor the area closely for potential hazards.";
+                infoBg = "rgba(255, 152, 0, 0.1)"; // Warn orange background tint
+                infoColor = "#ff9800";
+            }
 
+            // Update Donut Chart
             donutChart.setOption({
                 series: [{
                     data: [{ value: score, name: label, title: { color: '#888', fontFamily: 'Inter' } }],
                     progress: { itemStyle: { color: color } }
                 }]
             });
+
+            // Update Dynamic Info Box below it
+            const healthInfoEl = document.getElementById('health-info-text');
+            healthInfoEl.innerText = infoText;
+            healthInfoEl.style.backgroundColor = infoBg;
+            healthInfoEl.style.color = infoColor;
+            healthInfoEl.style.border = `1px solid ${infoColor}`;
+        }
+
+        // Fullscreen Toggle Logic
+        function toggleExpand(panelId) {
+            const panel = document.getElementById(panelId);
+            panel.classList.toggle('fullscreen');
+            
+            // Force ECharts to redraw and fit the new screen size
+            setTimeout(() => {
+                donutChart.resize();
+                lineChart.resize();
+            }, 50); // slight delay allows CSS transitions to complete
         }
 
         // Make charts resize automatically if window size changes
