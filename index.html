@@ -220,8 +220,8 @@
             margin: 0;
         }
 
-        /* Fullscreen Expansion Styles */
-        .expand-btn, .close-fullscreen {
+        /* Expansion Styles */
+        .expand-btn {
             background: none;
             border: none;
             color: var(--dost-blue);
@@ -233,49 +233,14 @@
             justify-content: center;
         }
 
-        .expand-btn:hover, .close-fullscreen:hover {
+        .expand-btn:hover {
             color: var(--dost-cyan);
             transform: scale(1.1);
         }
-
-        .close-fullscreen {
-            display: none;
-            font-size: 32px;
-        }
-
-        .chart-panel.fullscreen {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100vw;
-            height: 100vh;
-            z-index: 2000;
-            background-color: var(--bg-base);
-            border-radius: 0;
-            padding: 40px 5%;
-            margin: 0;
-            overflow-y: auto;
-        }
-
-        .chart-panel.fullscreen .expand-btn {
-            display: none;
-        }
-
-        .chart-panel.fullscreen .close-fullscreen {
-            display: block;
-        }
-
-        .chart-panel.fullscreen .donut-container,
-        .chart-panel.fullscreen .line-container {
-            flex-grow: 1;
-            height: auto;
-            min-height: 50vh;
-        }
-
-        .chart-panel.fullscreen .health-info {
-            font-size: 18px;
-            padding: 25px;
-            margin-top: 30px;
+        
+        .chart-modal-content {
+            max-width: 1000px;
+            width: 95%;
         }
 
         .donut-container {
@@ -512,11 +477,12 @@
 
         <!-- Bottom Row: Donut and Line Graph -->
         <div class="charts-row">
+        <!-- Bottom Row: Charts -->
+        <div class="charts-row">
             <div class="chart-panel" id="panel-health">
                 <div class="chart-header-wrap">
                     <div class="chart-title">System Health & Status</div>
-                    <button class="expand-btn" onclick="toggleExpand('panel-health')" title="Expand Chart">⛶</button>
-                    <button class="close-fullscreen" onclick="toggleExpand('panel-health')" title="Close">&times;</button>
+                    <button class="expand-btn" onclick="openChartModal('health')" title="Expand Chart">⛶</button>
                 </div>
                 <div id="donut-chart" class="donut-container"></div>
                 <div id="health-info-text" class="health-info">Awaiting sensor data to analyze system health...</div>
@@ -525,8 +491,7 @@
             <div class="chart-panel" id="panel-trends">
                 <div class="chart-header-wrap">
                     <div class="chart-title">Environmental Trends (Last 20 Readings)</div>
-                    <button class="expand-btn" onclick="toggleExpand('panel-trends')" title="Expand Chart">⛶</button>
-                    <button class="close-fullscreen" onclick="toggleExpand('panel-trends')" title="Close">&times;</button>
+                    <button class="expand-btn" onclick="openChartModal('trends')" title="Expand Chart">⛶</button>
                 </div>
                 <div id="line-chart" class="line-container"></div>
             </div>
@@ -546,6 +511,16 @@
             <div class="modal-source" id="modalSource">
                 <strong>Source:</strong> Regulatory citation will appear here.
             </div>
+        </div>
+    </div>
+
+    <!-- Chart Modal Overlay -->
+    <div class="modal-overlay" id="chartModal" onclick="closeChartModal(event)">
+        <div class="modal-content chart-modal-content" onclick="event.stopPropagation()">
+            <button class="modal-close" onclick="closeChartModal(true)">&times;</button>
+            <h2 class="modal-header" id="chartModalTitle">Chart Title</h2>
+            <div id="modal-chart-canvas" style="width: 100%; height: 50vh; min-height: 300px;"></div>
+            <div id="modal-health-info" class="health-info" style="display: none;"></div>
         </div>
     </div>
 
@@ -612,6 +587,10 @@
         // ==========================================
         const donutChart = echarts.init(document.getElementById('donut-chart'));
         const lineChart = echarts.init(document.getElementById('line-chart'));
+        
+        // Setup the invisible chart inside the modal
+        const modalChart = echarts.init(document.getElementById('modal-chart-canvas'));
+        let currentOpenChart = null;
 
         const donutOption = {
             series: [{
@@ -679,6 +658,11 @@
                 highestThreat = Math.max(highestThreat, updateProgressBar('hum', latest.field5, limits.hum, true));
 
                 updateDonutChart(highestThreat);
+
+                // If the user currently has the trend modal open, sync its data too!
+                if (currentOpenChart === 'trends') {
+                    modalChart.setOption(lineChart.getOption());
+                }
 
                 const lastDate = new Date(latest.created_at);
                 document.getElementById('last-update').innerText = "Last Synchronized: " + lastDate.toLocaleString() + " | Status: ONLINE";
@@ -769,24 +753,60 @@
             healthInfoEl.style.backgroundColor = infoBg;
             healthInfoEl.style.color = infoColor;
             healthInfoEl.style.border = `1px solid ${infoColor}`;
+            
+            // If the user currently has the health modal open, sync its data too!
+            if (currentOpenChart === 'health') {
+                modalChart.setOption(donutChart.getOption());
+                const modalInfo = document.getElementById('modal-health-info');
+                modalInfo.innerText = infoText;
+                modalInfo.style.backgroundColor = infoBg;
+                modalInfo.style.color = infoColor;
+                modalInfo.style.border = `1px solid ${infoColor}`;
+            }
         }
 
-        // Fullscreen Toggle Logic
-        function toggleExpand(panelId) {
-            const panel = document.getElementById(panelId);
-            panel.classList.toggle('fullscreen');
-            
-            // Force ECharts to redraw and fit the new screen size
+        // Chart Modal Logic
+        function openChartModal(chartType) {
+            currentOpenChart = chartType;
+            const modal = document.getElementById('chartModal');
+            const title = document.getElementById('chartModalTitle');
+            const infoBox = document.getElementById('modal-health-info');
+
+            modal.classList.add('show');
+
+            if (chartType === 'health') {
+                title.innerText = "System Health & Status";
+                modalChart.setOption(donutChart.getOption());
+                
+                // Copy the health warning box over to the modal
+                const sourceInfo = document.getElementById('health-info-text');
+                infoBox.innerText = sourceInfo.innerText;
+                infoBox.style.backgroundColor = sourceInfo.style.backgroundColor;
+                infoBox.style.color = sourceInfo.style.color;
+                infoBox.style.border = sourceInfo.style.border;
+                infoBox.style.display = "block";
+            } else if (chartType === 'trends') {
+                title.innerText = "Environmental Trends (Last 20 Readings)";
+                modalChart.setOption(lineChart.getOption());
+                infoBox.style.display = "none";
+            }
+
+            // Let the modal open, then resize the chart to fit it perfectly
             setTimeout(() => {
-                donutChart.resize();
-                lineChart.resize();
-            }, 50); // slight delay allows CSS transitions to complete
+                modalChart.resize();
+            }, 50);
+        }
+
+        function closeChartModal(event) {
+            document.getElementById('chartModal').classList.remove('show');
+            currentOpenChart = null;
         }
 
         // Make charts resize automatically if window size changes
         window.addEventListener('resize', function() {
             donutChart.resize();
             lineChart.resize();
+            modalChart.resize();
         });
 
         fetchHistoricalData();
