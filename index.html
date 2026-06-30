@@ -1,0 +1,434 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Air Quality & Temperature Monitoring System</title>
+    
+    <!-- Apache ECharts for the Line and Donut Graphs -->
+    <script src="https://cdn.jsdelivr.net/npm/echarts@5.5.0/dist/echarts.min.js"></script>
+
+    <style>
+        :root {
+            /* Enterprise Dark Mode Palette */
+            --bg-base: #121212;
+            --panel-bg: #1e1e1e;
+            --border-color: #2d2d2d;
+            --text-main: #e0e0e0;
+            --text-muted: #888888;
+            --dost-blue: #2196f3;
+            
+            /* Status Colors */
+            --status-safe: #4caf50;
+            --status-warn: #ff9800;
+            --status-danger: #f44336;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--bg-base);
+            color: var(--text-main);
+            margin: 0;
+            padding: 20px;
+        }
+
+        /* Top Navigation / Header */
+        .top-nav {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            border-bottom: 1px solid var(--border-color);
+            padding-bottom: 10px;
+            margin-bottom: 20px;
+        }
+
+        .top-nav h1 {
+            margin: 0;
+            font-size: 18px;
+            font-weight: 500;
+            color: var(--dost-blue);
+            text-transform: uppercase;
+        }
+
+        .top-nav .sub-tabs {
+            font-size: 14px;
+            color: var(--text-muted);
+            display: flex;
+            gap: 20px;
+        }
+
+        .top-nav .sub-tabs span.active {
+            color: var(--text-main);
+            border-bottom: 2px solid var(--dost-blue);
+            padding-bottom: 5px;
+        }
+
+        /* Main Grid Layout */
+        .dashboard {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        /* Top Row: Metric Cards */
+        .metrics-row {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+        }
+
+        .metric-card {
+            background-color: var(--panel-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 4px;
+            padding: 15px;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+        }
+
+        .card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+        }
+
+        .card-icon {
+            background-color: rgba(33, 150, 243, 0.1);
+            color: var(--dost-blue);
+            padding: 8px;
+            border-radius: 4px;
+            font-size: 18px;
+        }
+
+        .card-title {
+            font-size: 14px;
+            font-weight: 600;
+            margin-top: 10px;
+        }
+
+        .card-subtext {
+            font-size: 11px;
+            color: var(--text-muted);
+            margin-top: 2px;
+        }
+
+        .card-value {
+            font-size: 28px;
+            font-weight: bold;
+            color: var(--dost-blue);
+            margin: 15px 0 10px 0;
+        }
+
+        /* Linear Progress Bars */
+        .progress-track {
+            width: 100%;
+            height: 6px;
+            background-color: #333;
+            border-radius: 3px;
+            overflow: hidden;
+            margin-bottom: 10px;
+        }
+
+        .progress-fill {
+            height: 100%;
+            width: 0%;
+            background-color: var(--status-safe);
+            transition: width 0.5s ease, background-color 0.5s ease;
+        }
+
+        /* Action Text */
+        .action-text {
+            font-size: 11px;
+            font-weight: 600;
+            margin-top: 5px;
+            color: var(--text-muted);
+        }
+
+        /* Bottom Row: Charts */
+        .charts-row {
+            display: grid;
+            grid-template-columns: 1fr 2fr;
+            gap: 15px;
+        }
+
+        .chart-panel {
+            background-color: var(--panel-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 4px;
+            padding: 15px;
+        }
+
+        .chart-title {
+            font-size: 14px;
+            font-weight: 600;
+            margin-bottom: 10px;
+            color: var(--text-main);
+        }
+
+        .donut-container, .line-container {
+            width: 100%;
+            height: 300px;
+        }
+
+        /* System Info Footer */
+        .footer-info {
+            text-align: right;
+            font-size: 12px;
+            color: var(--text-muted);
+            margin-top: 10px;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="dashboard">
+        <!-- Top Navigation -->
+        <div class="top-nav">
+            <h1>Air Quality & Temperature Monitoring System</h1>
+            <div class="sub-tabs">
+                <span class="active">Live Telemetry</span>
+                <span>Evaluation Node</span>
+                <span>DOST Edge Computing</span>
+            </div>
+        </div>
+
+        <!-- Top Row: IT Style Metric Cards -->
+        <div class="metrics-row">
+            <div class="metric-card">
+                <div class="card-header">
+                    <div class="card-icon">🌫️</div>
+                </div>
+                <div class="card-title">PM2.5 DUST</div>
+                <div class="card-subtext">Limit: 35 µg/m³ (DENR)</div>
+                <div class="card-value" id="val-pm25">--</div>
+                <div class="progress-track"><div class="progress-fill" id="bar-pm25"></div></div>
+                <div class="action-text" id="action-pm25">Connecting...</div>
+            </div>
+
+            <div class="metric-card">
+                <div class="card-header">
+                    <div class="card-icon">💨</div>
+                </div>
+                <div class="card-title">TRUE CO2</div>
+                <div class="card-subtext">Limit: 1000 ppm (ASHRAE)</div>
+                <div class="card-value" id="val-co2">--</div>
+                <div class="progress-track"><div class="progress-fill" id="bar-co2"></div></div>
+                <div class="action-text" id="action-co2">Connecting...</div>
+            </div>
+
+            <div class="metric-card">
+                <div class="card-header">
+                    <div class="card-icon">☣️</div>
+                </div>
+                <div class="card-title">VOC LEVELS</div>
+                <div class="card-subtext">Limit: 400 Analog</div>
+                <div class="card-value" id="val-voc">--</div>
+                <div class="progress-track"><div class="progress-fill" id="bar-voc"></div></div>
+                <div class="action-text" id="action-voc">Connecting...</div>
+            </div>
+
+            <div class="metric-card">
+                <div class="card-header">
+                    <div class="card-icon">🌡️</div>
+                </div>
+                <div class="card-title">TEMPERATURE</div>
+                <div class="card-subtext">Optimal: 18-30 °C</div>
+                <div class="card-value" id="val-temp">--</div>
+                <div class="progress-track"><div class="progress-fill" id="bar-temp"></div></div>
+                <div class="action-text" id="action-temp">Connecting...</div>
+            </div>
+
+            <div class="metric-card">
+                <div class="card-header">
+                    <div class="card-icon">💧</div>
+                </div>
+                <div class="card-title">HUMIDITY</div>
+                <div class="card-subtext">Optimal: 40-65 %</div>
+                <div class="card-value" id="val-hum">--</div>
+                <div class="progress-track"><div class="progress-fill" id="bar-hum"></div></div>
+                <div class="action-text" id="action-hum">Connecting...</div>
+            </div>
+        </div>
+
+        <!-- Bottom Row: Donut and Line Graph -->
+        <div class="charts-row">
+            <div class="chart-panel">
+                <div class="chart-title">System Health & Status</div>
+                <div id="donut-chart" class="donut-container"></div>
+            </div>
+            
+            <div class="chart-panel">
+                <div class="chart-title">Environmental Trends (Last 20 Readings)</div>
+                <div id="line-chart" class="line-container"></div>
+            </div>
+        </div>
+
+        <div class="footer-info" id="last-update">Establishing secure connection to cloud...</div>
+    </div>
+
+    <script>
+        // ==========================================
+        // SYSTEM CONFIGURATION
+        // ==========================================
+        const channelID = '3415500'; 
+        
+        const limits = {
+            pm25: { max: 50, caution: 25, danger: 35 },
+            co2:  { max: 2000, caution: 800, danger: 1000 },
+            voc:  { max: 500, caution: 300, danger: 400 },
+            temp: { max: 50, caution: 30, danger: 32, min: 18 },
+            hum:  { max: 100, caution: 65, danger: 70, min: 40 }
+        };
+
+        const donutChart = echarts.init(document.getElementById('donut-chart'));
+        const lineChart = echarts.init(document.getElementById('line-chart'));
+
+        // ==========================================
+        // CHART CONFIGURATIONS
+        // ==========================================
+        const donutOption = {
+            series: [{
+                type: 'gauge',
+                startAngle: 90,
+                endAngle: -270,
+                pointer: { show: false },
+                progress: { show: true, overlap: false, roundCap: true, clip: false, itemStyle: { color: '#4caf50' } },
+                axisLine: { lineStyle: { width: 15, color: [[1, '#333']] } },
+                splitLine: { show: false },
+                axisTick: { show: false },
+                axisLabel: { show: false },
+                data: [{ value: 0, name: 'WAITING', title: { offsetCenter: ['0%', '20%'], color: '#888', fontSize: 14 } }],
+                detail: { width: 50, height: 14, fontSize: 32, color: '#e0e0e0', formatter: '{value}%', offsetCenter: ['0%', '-10%'] }
+            }]
+        };
+        donutChart.setOption(donutOption);
+
+        const lineOption = {
+            tooltip: { trigger: 'axis' },
+            legend: { data: ['PM2.5', 'CO2 (Scaled x0.1)'], textStyle: { color: '#888' }, bottom: 0 },
+            grid: { left: '3%', right: '4%', bottom: '15%', top: '5%', containLabel: true },
+            xAxis: { type: 'category', boundaryGap: false, data: [], axisLabel: { color: '#888' } },
+            yAxis: { type: 'value', splitLine: { lineStyle: { color: '#333' } }, axisLabel: { color: '#888' } },
+            series: [
+                { name: 'PM2.5', type: 'line', smooth: true, itemStyle: { color: '#2196f3' }, data: [] },
+                { name: 'CO2 (Scaled x0.1)', type: 'line', smooth: true, itemStyle: { color: '#ff9800' }, data: [] }
+            ]
+        };
+        lineChart.setOption(lineOption);
+
+        // ==========================================
+        // DATA FETCHING & UI UPDATE LOGIC
+        // ==========================================
+        async function fetchHistoricalData() {
+            const url = `https://api.thingspeak.com/channels/${channelID}/feeds.json?results=20`;
+            
+            try {
+                const response = await fetch(url);
+                const data = await response.json();
+                const feeds = data.feeds;
+
+                if (feeds.length === 0) return;
+
+                const times = [];
+                const pm25Data = [];
+                const co2Data = [];
+
+                feeds.forEach(feed => {
+                    const date = new Date(feed.created_at);
+                    times.push(date.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}));
+                    pm25Data.push(feed.field2 || 0);
+                    co2Data.push((feed.field1 || 0) / 10); 
+                });
+
+                lineChart.setOption({ xAxis: { data: times }, series: [{ data: pm25Data }, { data: co2Data }] });
+
+                const latest = feeds[feeds.length - 1];
+                let highestThreat = 0; 
+
+                highestThreat = Math.max(highestThreat, updateProgressBar('pm25', latest.field2, limits.pm25));
+                highestThreat = Math.max(highestThreat, updateProgressBar('co2', latest.field1, limits.co2));
+                highestThreat = Math.max(highestThreat, updateProgressBar('voc', latest.field3, limits.voc));
+                highestThreat = Math.max(highestThreat, updateProgressBar('temp', latest.field4, limits.temp, true));
+                highestThreat = Math.max(highestThreat, updateProgressBar('hum', latest.field5, limits.hum, true));
+
+                updateDonutChart(highestThreat);
+
+                const lastDate = new Date(latest.created_at);
+                document.getElementById('last-update').innerText = "Last Synchronized: " + lastDate.toLocaleString() + " | Status: ONLINE";
+
+            } catch (error) {
+                console.error("Cloud Error: ", error);
+                document.getElementById('last-update').innerText = "SYSTEM OFFLINE: Night Shift Deep Sleep Active or Network Error.";
+            }
+        }
+
+        function updateProgressBar(sensor, valStr, limitObj, isMinMax = false) {
+            const valEl = document.getElementById('val-' + sensor);
+            const barEl = document.getElementById('bar-' + sensor);
+            const actionEl = document.getElementById('action-' + sensor);
+            
+            if (!valStr) {
+                actionEl.innerText = "Please check ESP32 / sensor wiring.";
+                actionEl.style.color = "var(--status-warn)";
+                return 0;
+            }
+            
+            const val = parseFloat(valStr).toFixed(1);
+            valEl.innerText = val;
+
+            let percent = (val / limitObj.max) * 100;
+            if (percent > 100) percent = 100;
+            barEl.style.width = percent + '%';
+
+            let isDanger = isMinMax ? (val < limitObj.min || val > limitObj.danger) : (val > limitObj.danger);
+
+            if (isDanger) {
+                barEl.style.backgroundColor = 'var(--status-danger)';
+                valEl.style.color = 'var(--status-danger)';
+                actionEl.innerText = "CRITICAL: Please ventilate & check area!";
+                actionEl.style.color = 'var(--status-danger)';
+                return 2;
+            } else if (val > limitObj.caution) {
+                barEl.style.backgroundColor = 'var(--status-warn)';
+                valEl.style.color = 'var(--status-warn)';
+                actionEl.innerText = "WARNING: Please monitor levels closely.";
+                actionEl.style.color = 'var(--status-warn)';
+                return 1;
+            } else {
+                barEl.style.backgroundColor = 'var(--status-safe)';
+                valEl.style.color = 'var(--dost-blue)';
+                actionEl.innerText = "System Normal. No action required.";
+                actionEl.style.color = 'var(--text-muted)';
+                return 0;
+            }
+        }
+
+        function updateDonutChart(threat) {
+            let color = '#4caf50'; 
+            let label = 'SAFE';
+            let score = 100;
+
+            if (threat === 2) { color = '#f44336'; label = 'DANGER'; score = 15; }
+            else if (threat === 1) { color = '#ff9800'; label = 'WARN'; score = 65; }
+
+            donutChart.setOption({
+                series: [{
+                    data: [{ value: score, name: label, title: { color: '#888' } }],
+                    progress: { itemStyle: { color: color } }
+                }]
+            });
+        }
+
+        window.addEventListener('resize', function() {
+            donutChart.resize();
+            lineChart.resize();
+        });
+
+        fetchHistoricalData();
+        setInterval(fetchHistoricalData, 15000);
+    </script>
+</body>
+</html>
