@@ -659,7 +659,7 @@
 
                 // If the user currently has the trend modal open, sync its data too!
                 if (currentOpenChart === 'trends') {
-                    modalChart.setOption(lineChart.getOption());
+                    modalChart.setOption(lineChart.getOption(), true);
                 }
 
                 const lastDate = new Date(latest.created_at);
@@ -754,7 +754,7 @@
             
             // If the user currently has the health modal open, sync its data too!
             if (currentOpenChart === 'health') {
-                modalChart.setOption(donutChart.getOption());
+                modalChart.setOption(donutChart.getOption(), true);
                 const modalInfo = document.getElementById('modal-health-info');
                 modalInfo.innerText = infoText;
                 modalInfo.style.backgroundColor = infoBg;
@@ -771,10 +771,13 @@
             const infoBox = document.getElementById('modal-health-info');
 
             modal.classList.add('show');
+            
+            // CRITICAL FIX: Clear the canvas memory before drawing a new chart
+            modalChart.clear();
 
             if (chartType === 'health') {
                 title.innerText = "System Health & Status";
-                modalChart.setOption(donutChart.getOption());
+                modalChart.setOption(donutChart.getOption(), true); // 'true' forces a fresh draw without merging
                 
                 // Copy the health warning box over to the modal
                 const sourceInfo = document.getElementById('health-info-text');
@@ -785,7 +788,7 @@
                 infoBox.style.display = "block";
             } else if (chartType === 'trends') {
                 title.innerText = "Environmental Trends (Last 20 Readings)";
-                modalChart.setOption(lineChart.getOption());
+                modalChart.setOption(lineChart.getOption(), true); // 'true' forces a fresh draw without merging
                 infoBox.style.display = "none";
             }
 
