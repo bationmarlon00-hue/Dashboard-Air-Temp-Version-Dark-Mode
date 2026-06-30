@@ -5,6 +5,11 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Air Quality & Temperature Monitoring System</title>
     
+    <!-- Google Fonts: Inter -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+
     <!-- Apache ECharts for the Line and Donut Graphs -->
     <script src="https://cdn.jsdelivr.net/npm/echarts@5.5.0/dist/echarts.min.js"></script>
 
@@ -17,6 +22,7 @@
             --text-main: #e0e0e0;
             --text-muted: #888888;
             --dost-blue: #2196f3;
+            --dost-cyan: #00ffff;
             
             /* Status Colors */
             --status-safe: #4caf50;
@@ -25,7 +31,8 @@
         }
 
         body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            /* Modern, Clean Dashboard Font */
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
             background-color: var(--bg-base);
             color: var(--text-main);
             margin: 0;
@@ -50,25 +57,30 @@
         }
 
         .brand-logo {
-            width: 45px;
-            height: 45px;
+            width: 50px;
+            height: 50px;
             object-fit: contain;
             border-radius: 50%;
-            background-color: white; /* Adds contrast in case the logo has dark text */
-            padding: 2px;
+            background-color: white; 
+            padding: 3px;
+            box-shadow: 0 0 10px rgba(33, 150, 243, 0.3);
         }
 
         .top-nav h1 {
             margin: 0;
-            font-size: 28px; 
-            font-weight: 600; 
-            color: var(--dost-blue);
+            font-size: 36px; /* Massively increased size */
+            font-weight: 900; /* Extra Black font weight */
+            /* Premium Cyan-to-Blue Gradient for the title */
+            background: linear-gradient(90deg, #4facfe 0%, #00f2fe 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
             text-transform: uppercase;
-            letter-spacing: 1px;
+            letter-spacing: 0.5px;
         }
 
         .top-nav .sub-tabs {
             font-size: 15px; 
+            font-weight: 500;
             color: var(--text-muted);
             display: flex;
             gap: 20px;
@@ -77,6 +89,11 @@
         .top-nav .sub-tabs span {
             cursor: pointer;
             padding-bottom: 5px;
+            transition: color 0.3s ease;
+        }
+
+        .top-nav .sub-tabs span:hover {
+            color: var(--text-main);
         }
 
         .top-nav .sub-tabs span.active {
@@ -103,11 +120,21 @@
         .metric-card {
             background-color: var(--panel-bg);
             border: 1px solid var(--border-color);
-            border-radius: 6px;
+            border-radius: 12px; 
             padding: 18px;
             display: flex;
             flex-direction: column;
             justify-content: space-between;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.2);
+            cursor: pointer; /* Indicates it can be clicked */
+            transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
+        }
+
+        /* Hover effect for interactivity */
+        .metric-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 15px rgba(0, 242, 254, 0.15);
+            border-color: rgba(0, 242, 254, 0.4);
         }
 
         .card-header {
@@ -120,28 +147,30 @@
             background-color: rgba(33, 150, 243, 0.1);
             color: var(--dost-blue);
             padding: 10px;
-            border-radius: 6px;
+            border-radius: 8px;
             font-size: 20px;
         }
 
         .card-title {
             font-size: 16px; 
-            font-weight: 600;
+            font-weight: 700; 
             margin-top: 12px;
             letter-spacing: 0.5px;
         }
 
         .card-subtext {
             font-size: 12px;
+            font-weight: 400;
             color: var(--text-muted);
             margin-top: 4px;
         }
 
         .card-value {
-            font-size: 34px; 
-            font-weight: bold;
+            font-size: 36px; 
+            font-weight: 800; 
             color: var(--dost-blue);
             margin: 15px 0 12px 0;
+            letter-spacing: -1px; 
         }
 
         /* Linear Progress Bars */
@@ -179,13 +208,14 @@
         .chart-panel {
             background-color: var(--panel-bg);
             border: 1px solid var(--border-color);
-            border-radius: 6px;
+            border-radius: 12px;
             padding: 20px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.2);
         }
 
         .chart-title {
             font-size: 18px; 
-            font-weight: 600;
+            font-weight: 700;
             margin-bottom: 15px;
             color: var(--text-main);
             letter-spacing: 0.5px;
@@ -200,9 +230,94 @@
         .footer-info {
             text-align: right;
             font-size: 13px;
+            font-weight: 500;
             color: var(--text-muted);
             margin-top: 10px;
             padding-bottom: 20px;
+        }
+
+        /* Modal Styles */
+        .modal-overlay {
+            display: none; /* Hidden by default */
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0, 0, 0, 0.75);
+            backdrop-filter: blur(5px);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+
+        .modal-overlay.show {
+            display: flex;
+            opacity: 1;
+        }
+
+        .modal-content {
+            background-color: var(--panel-bg);
+            border: 1px solid var(--dost-blue);
+            border-radius: 16px;
+            width: 90%;
+            max-width: 600px;
+            padding: 30px;
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.5);
+            position: relative;
+            transform: translateY(20px);
+            transition: transform 0.3s ease;
+        }
+
+        .modal-overlay.show .modal-content {
+            transform: translateY(0);
+        }
+
+        .modal-close {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            background: none;
+            border: none;
+            color: var(--text-muted);
+            font-size: 24px;
+            cursor: pointer;
+            transition: color 0.2s ease;
+        }
+
+        .modal-close:hover {
+            color: var(--text-main);
+        }
+
+        .modal-header {
+            font-size: 24px;
+            font-weight: 800;
+            color: var(--dost-blue);
+            margin-bottom: 15px;
+            margin-top: 0;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .modal-body {
+            font-size: 15px;
+            line-height: 1.6;
+            color: var(--text-main);
+            margin-bottom: 20px;
+        }
+
+        .modal-source {
+            font-size: 13px;
+            line-height: 1.5;
+            color: var(--text-muted);
+            background-color: rgba(255, 255, 255, 0.05);
+            padding: 15px;
+            border-radius: 8px;
+            border-left: 4px solid var(--status-warn);
+        }
+        
+        .modal-source strong {
+            color: var(--e0e0e0);
         }
 
         /* ==========================================
@@ -220,13 +335,13 @@
             }
 
             .top-nav h1 {
-                font-size: 20px; /* Scales down so it doesn't break the layout on mobile */
+                font-size: 22px; /* Scales down so it doesn't break the layout on mobile */
                 line-height: 1.3;
             }
 
             .brand-logo {
-                width: 35px;
-                height: 35px;
+                width: 40px;
+                height: 40px;
             }
 
             .top-nav .sub-tabs {
@@ -245,7 +360,7 @@
             }
             
             .card-value {
-                font-size: 30px;
+                font-size: 32px;
             }
         }
     </style>
@@ -256,7 +371,6 @@
         <!-- Top Navigation -->
         <div class="top-nav">
             <div class="brand-container">
-                <!-- Replace 'src' with your actual logo file (e.g., src="logo.png") if needed -->
                 <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/f/f7/Department_of_Science_and_Technology_%28DOST%29_-_Seal.svg/240px-Department_of_Science_and_Technology_%28DOST%29_-_Seal.svg.png" alt="DOST Logo" class="brand-logo" onerror="this.style.display='none'">
                 <h1>Air Quality & Temp Monitoring</h1>
             </div>
@@ -268,9 +382,9 @@
             </div>
         </div>
 
-        <!-- Top Row: IT Style Metric Cards -->
+        <!-- Top Row: IT Style Metric Cards (Now Clickable) -->
         <div class="metrics-row">
-            <div class="metric-card">
+            <div class="metric-card" onclick="openModal('pm25')">
                 <div class="card-header">
                     <div class="card-icon">🌫️</div>
                 </div>
@@ -281,7 +395,7 @@
                 <div class="action-text" id="action-pm25">Connecting...</div>
             </div>
 
-            <div class="metric-card">
+            <div class="metric-card" onclick="openModal('co2')">
                 <div class="card-header">
                     <div class="card-icon">💨</div>
                 </div>
@@ -292,7 +406,7 @@
                 <div class="action-text" id="action-co2">Connecting...</div>
             </div>
 
-            <div class="metric-card">
+            <div class="metric-card" onclick="openModal('voc')">
                 <div class="card-header">
                     <div class="card-icon">☣️</div>
                 </div>
@@ -303,7 +417,7 @@
                 <div class="action-text" id="action-voc">Connecting...</div>
             </div>
 
-            <div class="metric-card">
+            <div class="metric-card" onclick="openModal('temp')">
                 <div class="card-header">
                     <div class="card-icon">🌡️</div>
                 </div>
@@ -314,7 +428,7 @@
                 <div class="action-text" id="action-temp">Connecting...</div>
             </div>
 
-            <div class="metric-card">
+            <div class="metric-card" onclick="openModal('hum')">
                 <div class="card-header">
                     <div class="card-icon">💧</div>
                 </div>
@@ -342,6 +456,20 @@
         <div class="footer-info" id="last-update">Establishing secure connection to cloud...</div>
     </div>
 
+    <!-- Info Modal Overlay -->
+    <div class="modal-overlay" id="infoModal" onclick="closeModal(event)">
+        <div class="modal-content" onclick="event.stopPropagation()">
+            <button class="modal-close" onclick="closeModal(true)">&times;</button>
+            <h2 class="modal-header" id="modalTitle">Sensor Name</h2>
+            <div class="modal-body" id="modalBody">
+                Health and scientific impact information will appear here.
+            </div>
+            <div class="modal-source" id="modalSource">
+                <strong>Source:</strong> Regulatory citation will appear here.
+            </div>
+        </div>
+    </div>
+
     <script>
         // ==========================================
         // SYSTEM CONFIGURATION
@@ -356,12 +484,57 @@
             hum:  { max: 100, caution: 65, danger: 70, min: 40 }
         };
 
-        const donutChart = echarts.init(document.getElementById('donut-chart'));
-        const lineChart = echarts.init(document.getElementById('line-chart'));
+        // Modal Content Dictionary
+        const sensorInfo = {
+            pm25: {
+                title: "🌫️ Particulate Matter (PM2.5)",
+                body: "Fine inhalable particles with diameters that are generally 2.5 micrometers and smaller. These microscopic particles can bypass the nose and throat, penetrating deep into the lungs and even entering the bloodstream. Long-term exposure is heavily linked to severe cardiovascular diseases, asthma, and reduced lung function.",
+                source: "<strong>Philippine Clean Air Act (RA 8749) / DENR DAO 2020-14:</strong> Officially classifies PM2.5 levels exceeding 35 µg/m³ as dangerous for sensitive groups.<br><br><strong>WHO 2021 Air Quality Guidelines:</strong> Recommends a much stricter 24-hour safe exposure limit of 15 µg/m³."
+            },
+            co2: {
+                title: "💨 Carbon Dioxide (CO2)",
+                body: "A colorless gas indicating indoor ventilation quality. Elevated indoor CO2 levels directly correlate with decreased cognitive function, lethargy, poor decision-making, and an increased risk of airborne viral transmission due to stagnant air.",
+                source: "<strong>ASHRAE Standard 62.1 (Ventilation for Acceptable IAQ):</strong> Recommends keeping indoor CO2 levels below 1000 ppm to maintain optimal cognitive performance and ensure adequate fresh air exchange in commercial and educational environments."
+            },
+            voc: {
+                title: "☣️ Volatile Organic Compounds (VOC)",
+                body: "Harmful gases emitted from certain solids or liquids (such as paints, cleaning supplies, office equipment, and building materials). High concentrations lead to 'Sick Building Syndrome', resulting in immediate headaches, nausea, eye irritation, and long-term respiratory sensitivity.",
+                source: "<strong>WHO Guidelines for Indoor Air Quality & US EPA:</strong> Acceptable ambient levels for indoor occupational spaces are generally recommended to remain below 300-400 ppb to prevent acute physiological reactions."
+            },
+            temp: {
+                title: "🌡️ Ambient Temperature",
+                body: "Crucial for maintaining occupational health, preventing thermal stress on human occupants, and ensuring active IT equipment (servers, routers, microcontrollers) do not experience thermal throttling or hardware failure.",
+                source: "<strong>ASHRAE Standard 55 (Thermal Environmental Conditions):</strong> Optimal indoor operating ranges for human comfort and productivity fall between 22°C and 27°C, depending on the relative humidity and clothing insulation."
+            },
+            hum: {
+                title: "💧 Relative Humidity",
+                body: "The amount of moisture in the air. High humidity (above 65%) promotes dangerous mold growth, structural damage, and exacerbates respiratory issues. Abnormally low humidity (below 30%) causes skin and eye irritation and exponentially increases the risk of Electrostatic Discharge (ESD) damage to sensitive electronics.",
+                source: "<strong>ASHRAE Standard 55 & EPA:</strong> Recommended indoor relative humidity should be maintained between 40% and 60% for maximum biological comfort and structural safety."
+            }
+        };
+
+        // Modal Logic
+        function openModal(sensorType) {
+            const data = sensorInfo[sensorType];
+            if(data) {
+                document.getElementById('modalTitle').innerHTML = data.title;
+                document.getElementById('modalBody').innerHTML = data.body;
+                document.getElementById('modalSource').innerHTML = data.source;
+                document.getElementById('infoModal').classList.add('show');
+            }
+        }
+
+        function closeModal(force = false) {
+            // Close if clicking the 'X' or clicking outside the content box
+            document.getElementById('infoModal').classList.remove('show');
+        }
 
         // ==========================================
         // CHART CONFIGURATIONS
         // ==========================================
+        const donutChart = echarts.init(document.getElementById('donut-chart'));
+        const lineChart = echarts.init(document.getElementById('line-chart'));
+
         const donutOption = {
             series: [{
                 type: 'gauge',
@@ -373,18 +546,18 @@
                 splitLine: { show: false },
                 axisTick: { show: false },
                 axisLabel: { show: false },
-                data: [{ value: 0, name: 'WAITING', title: { offsetCenter: ['0%', '20%'], color: '#888', fontSize: 14 } }],
-                detail: { width: 50, height: 14, fontSize: 32, color: '#e0e0e0', formatter: '{value}%', offsetCenter: ['0%', '-10%'] }
+                data: [{ value: 0, name: 'WAITING', title: { offsetCenter: ['0%', '20%'], color: '#888', fontSize: 14, fontFamily: 'Inter' } }],
+                detail: { width: 50, height: 14, fontSize: 32, fontWeight: 700, fontFamily: 'Inter', color: '#e0e0e0', formatter: '{value}%', offsetCenter: ['0%', '-10%'] }
             }]
         };
         donutChart.setOption(donutOption);
 
         const lineOption = {
             tooltip: { trigger: 'axis' },
-            legend: { data: ['PM2.5', 'CO2 (Scaled x0.1)'], textStyle: { color: '#888' }, bottom: 0 },
+            legend: { data: ['PM2.5', 'CO2 (Scaled x0.1)'], textStyle: { color: '#888', fontFamily: 'Inter' }, bottom: 0 },
             grid: { left: '3%', right: '4%', bottom: '15%', top: '5%', containLabel: true },
-            xAxis: { type: 'category', boundaryGap: false, data: [], axisLabel: { color: '#888' } },
-            yAxis: { type: 'value', splitLine: { lineStyle: { color: '#333' } }, axisLabel: { color: '#888' } },
+            xAxis: { type: 'category', boundaryGap: false, data: [], axisLabel: { color: '#888', fontFamily: 'Inter' } },
+            yAxis: { type: 'value', splitLine: { lineStyle: { color: '#333' } }, axisLabel: { color: '#888', fontFamily: 'Inter' } },
             series: [
                 { name: 'PM2.5', type: 'line', smooth: true, itemStyle: { color: '#2196f3' }, data: [] },
                 { name: 'CO2 (Scaled x0.1)', type: 'line', smooth: true, itemStyle: { color: '#ff9800' }, data: [] }
@@ -489,7 +662,7 @@
 
             donutChart.setOption({
                 series: [{
-                    data: [{ value: score, name: label, title: { color: '#888' } }],
+                    data: [{ value: score, name: label, title: { color: '#888', fontFamily: 'Inter' } }],
                     progress: { itemStyle: { color: color } }
                 }]
             });
